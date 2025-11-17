@@ -1,6 +1,42 @@
 # HexaCore
 
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue)
+![Node.js](https://img.shields.io/badge/Node.js-16+-green)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 A TypeScript Node.js boilerplate implementing **Hexagonal Architecture** (Ports and Adapters), **Domain-Driven Design (DDD)**, and the **Repository Pattern** with support for both MySQL and MongoDB.
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/shawon-kanji/hexacore.git
+cd hexacore
+
+# Install dependencies
+yarn install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your database credentials
+
+# Run in development mode
+yarn dev
+
+# Or build and run production
+yarn build
+yarn start
+```
+
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Key Features](#key-features)
+- [Getting Started](#getting-started)
+- [API Endpoints](#api-endpoints)
+- [Switching Between Databases](#switching-between-databases)
+- [Extending the Boilerplate](#extending-the-boilerplate)
+- [Technologies Used](#technologies-used)
 
 ## Architecture Overview
 
@@ -117,19 +153,21 @@ export class UserService {
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- MySQL or MongoDB
-- npm or yarn
+- MySQL and/or MongoDB (supports dual database setup)
+- yarn (recommended) or npm
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/shawon-kanji/hexacore.git
 cd hexacore
 ```
 
 2. Install dependencies:
 ```bash
+yarn install
+# or
 npm install
 ```
 
@@ -159,27 +197,54 @@ MONGODB_URI=mongodb://localhost:27017/hexacore
 
 Development mode with hot reload:
 ```bash
+yarn dev
+# or
 npm run dev
 ```
 
 Build for production:
 ```bash
+yarn build
+yarn start
+# or
 npm run build
 npm start
 ```
 
-## Switching Between Databases
+### Available Scripts
 
-To switch from MySQL to MongoDB (or vice versa):
+- `yarn dev` - Start development server with hot reload
+- `yarn build` - Build TypeScript to JavaScript
+- `yarn start` - Run production build
+- `yarn lint` - Run ESLint
+- `yarn format` - Format code with Prettier
+
+## Database Configuration
+
+### Dual Database Setup
+
+This application supports **dual database setup**, connecting to both MySQL and MongoDB simultaneously. The current implementation registers both repository implementations, allowing you to:
+
+- Store data in both databases
+- Use the repository pattern to abstract data access
+- Easily switch between implementations via dependency injection
+
+### Switching Between Databases
+
+To switch the primary repository from MySQL to MongoDB (or vice versa):
 
 1. Update `.env`:
 ```env
 DATABASE_TYPE=mongodb  # or mysql
 ```
 
-2. Restart the application
+2. Configure the desired database connection settings in `.env`
 
-**That's it!** No code changes required. The application will automatically use the appropriate repository implementation.
+3. Update the DI container in `src/infrastructure/config/container.ts` to bind your preferred implementation
+
+4. Restart the application
+
+**That's it!** No code changes required in the service layer. The application will automatically use the appropriate repository implementation.
 
 ## API Endpoints
 
@@ -325,13 +390,50 @@ The domain layer has **zero** external dependencies.
 
 ## Technologies Used
 
-- **TypeScript**: Type safety and better developer experience
-- **Express**: Web framework
-- **InversifyJS**: Dependency injection container
-- **MySQL2**: MySQL driver
-- **Mongoose**: MongoDB ODM
-- **dotenv**: Environment configuration
-- **Reflect-metadata**: Decorator metadata for DI
+### Core
+- **TypeScript 5.3.3**: Type safety and better developer experience
+- **Node.js**: JavaScript runtime
+- **Express 4.18**: Fast, unopinionated web framework
+
+### Database
+- **MySQL2 3.6**: MySQL driver for Node.js
+- **Mongoose 8.0**: MongoDB ODM with schema validation
+
+### Architecture & Patterns
+- **InversifyJS 6.0**: Dependency injection container for IoC
+- **Reflect-metadata 0.2**: Decorator metadata for dependency injection
+
+### Validation & Transformation
+- **class-validator 0.14**: Declarative validation using decorators
+- **class-transformer 0.5**: Transform plain objects to class instances
+
+### Development Tools
+- **ts-node-dev**: TypeScript execution with hot reload
+- **ESLint**: Code linting and style enforcement
+- **Prettier**: Code formatting
+- **dotenv**: Environment variable management
+
+## What You'll Learn
+
+By exploring this boilerplate, you'll understand:
+
+- How to implement **Hexagonal Architecture** in a real-world application
+- **Domain-Driven Design** principles and patterns
+- **Repository Pattern** for database abstraction
+- **Dependency Injection** with InversifyJS
+- How to structure a TypeScript project for scalability
+- Writing maintainable, testable, and flexible code
+- SOLID principles in practice
+
+## Use Cases
+
+This boilerplate is perfect for:
+
+- Building enterprise-grade APIs
+- Projects requiring multiple database support
+- Learning clean architecture patterns
+- Starting a new TypeScript project with best practices
+- Creating maintainable and testable codebases
 
 ## License
 
@@ -340,6 +442,10 @@ MIT
 ## Contributing
 
 Contributions are welcome! This is a boilerplate project meant to be forked and customized for your needs.
+
+## Author
+
+Created by [Shawon Kanji](https://github.com/shawon-kanji)
 
 ---
 
