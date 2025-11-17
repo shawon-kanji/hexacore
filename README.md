@@ -4,15 +4,22 @@
 ![Node.js](https://img.shields.io/badge/Node.js-16+-green)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-A TypeScript Node.js boilerplate implementing **Hexagonal Architecture** (Ports and Adapters), **Domain-Driven Design (DDD)**, and the **Repository Pattern** with support for both MySQL and MongoDB.
+A professional TypeScript Node.js boilerplate implementing **Clean Architecture** (Hexagonal Architecture), **Domain-Driven Design**, and **multi-database support** with proper dependency inversion.
+
+## Features
+
+- **Clean Architecture** - Proper dependency inversion following Uncle Bob's principles
+- **Domain-Driven Design** - Rich domain models with entities and value objects
+- **Abstract Factory Pattern** - Dependency injection without frameworks
+- **Dual-Database Support** - Simultaneous MySQL and MongoDB with sync
+- **Bounded Contexts** - Services organized by business capabilities
+- **Repository Pattern** - Database-agnostic data access
+- **Type Safety** - Full TypeScript with strict mode
+- **Zero Framework Dependencies** - Clean, explicit dependency injection
 
 ## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/shawon-kanji/hexacore.git
-cd hexacore
-
 # Install dependencies
 yarn install
 
@@ -20,497 +27,388 @@ yarn install
 cp .env.example .env
 # Edit .env with your database credentials
 
-# Run in development mode
+# Run development server
 yarn dev
 
-# Or build and run production
+# Build for production
 yarn build
 yarn start
 ```
 
-## Table of Contents
+## Architecture
 
-- [Architecture Overview](#architecture-overview)
-- [Key Features](#key-features)
-- [Getting Started](#getting-started)
-- [API Endpoints](#api-endpoints)
-- [Switching Between Databases](#switching-between-databases)
-- [Extending the Boilerplate](#extending-the-boilerplate)
-- [Technologies Used](#technologies-used)
-
-## Architecture Overview
-
-This project demonstrates clean architecture principles with clear separation of concerns:
-
-### Hexagonal Architecture (Ports and Adapters)
+### Clean Architecture Layers
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Presentation Layer                    │
-│              (Controllers, Routes, DTOs)                 │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                  Application Layer                       │
-│              (Services, Use Cases, DTOs)                 │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                    Domain Layer                          │
-│         (Entities, Value Objects, Repositories)          │
-│                      [PORTS]                             │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                Infrastructure Layer                      │
-│    (Database Adapters, External Services, Config)       │
-│                     [ADAPTERS]                           │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│           Presentation Layer (Routes, Controllers)  │
+│                 Composition Root                     │
+└──────────────────────┬──────────────────────────────┘
+                       │ depends on
+┌──────────────────────▼──────────────────────────────┐
+│         Application Layer (Services, Use Cases)      │
+│              Defines IRepositoryFactory              │
+└──────────────────────┬──────────────────────────────┘
+                       │ depends on
+┌──────────────────────▼──────────────────────────────┐
+│      Domain Layer (Entities, Value Objects)          │
+│           Repository Interfaces (Ports)              │
+└──────────────────────────────────────────────────────┘
+                       ▲
+                       │ implements
+┌──────────────────────┴──────────────────────────────┐
+│    Infrastructure Layer (Implementations)            │
+│    Repository Implementations, RepositoryFactory    │
+└──────────────────────────────────────────────────────┘
 ```
+
+**Key Principle:** All dependencies point **inward**. The Application layer defines interfaces; Infrastructure implements them.
 
 ### Folder Structure
 
 ```
 src/
-├── domain/                      # Core business logic (no dependencies)
-│   ├── entities/               # Business entities (User)
-│   ├── value-objects/          # Value objects (Email, UserId)
-│   └── repositories/           # Repository interfaces (PORTS)
+├── domain/                    # Business logic (zero dependencies)
+│   ├── entities/             # User
+│   ├── value-objects/        # Email, UserId
+│   └── repositories/         # IUserRepository (interface)
 │
-├── application/                # Application business rules
-│   ├── services/              # Application services
-│   ├── use-cases/             # Use case implementations
-│   └── dto/                   # Data Transfer Objects
+├── application/               # Business use cases
+│   ├── dto/                  # Data Transfer Objects
+│   ├── interfaces/           # IRepositoryFactory
+│   ├── services/             # UserManagementService, UserProfileService
+│   └── use-cases/            # CreateUserUseCase, GetUserByIdUseCase, etc.
 │
-├── infrastructure/             # External concerns (ADAPTERS)
-│   ├── persistence/
-│   │   ├── mysql/            # MySQL repository implementation
-│   │   └── mongodb/          # MongoDB repository implementation
-│   ├── database/             # Database connections
-│   └── config/               # DI container configuration
+├── infrastructure/            # Technical implementations
+│   ├── config/
+│   │   ├── repositories.ts   # Singleton factory functions
+│   │   ├── RepositoryFactory.ts  # Implements IRepositoryFactory
+│   │   └── serviceFactory.ts     # Service composition functions
+│   ├── database/             # MySQL and MongoDB connections
+│   └── persistence/
+│       ├── mysql/           # MySQLUserRepository
+│       └── mongodb/         # MongoDBUserRepository
 │
-├── presentation/              # API/UI layer
-│   ├── controllers/          # HTTP controllers
-│   ├── routes/              # Route definitions
-│   └── middlewares/         # Express middlewares
-│
-└── shared/                   # Shared utilities
-    ├── types/               # TypeScript types and DI symbols
-    ├── errors/             # Custom error classes
-    └── utils/              # Helper functions
+└── presentation/              # HTTP interface
+    ├── controllers/          # UserController
+    └── routes/              # Composition root
 ```
-
-## Key Features
-
-- **Hexagonal Architecture**: Business logic is completely isolated from external concerns
-- **Domain-Driven Design**: Rich domain model with entities and value objects
-- **Repository Pattern**: Abstract data access through interfaces
-- **Multi-Database Support**: Simultaneous connections to MySQL and MongoDB with automatic synchronization
-- **Dependency Injection**: Using InversifyJS for IoC
-- **Polyglot Persistence**: Use multiple databases in a single application
-- **Type Safety**: Full TypeScript support with strict mode
-- **Clean Code**: SOLID principles and separation of concerns
-- **Dual-Write Pattern**: Automatic data synchronization across databases
 
 ## How It Works
 
-### The Repository Pattern
+### Dependency Injection
 
-The repository pattern provides an abstraction layer between the domain and data layers:
-
-1. **Interface (Port)**: `IUserRepository` in `src/domain/repositories/`
-2. **Implementations (Adapters)**:
-   - `MySQLUserRepository` in `src/infrastructure/persistence/mysql/`
-   - `MongoDBUserRepository` in `src/infrastructure/persistence/mongodb/`
-
-### Dependency Injection & Multi-Database Support
-
-The IoC container (`src/infrastructure/config/container.ts`) registers **both** repository implementations:
+Dependencies are wired together in the **composition root** (route files):
 
 ```typescript
-// Bind BOTH repository implementations
-container
-  .bind<IUserRepository>(TYPES.MySQLUserRepository)
-  .to(MySQLUserRepository)
-  .inSingletonScope();
+// src/presentation/routes/userRoutes.ts
 
-container
-  .bind<IUserRepository>(TYPES.MongoDBUserRepository)
-  .to(MongoDBUserRepository)
-  .inSingletonScope();
+import { createUserProfileService, createUserManagementService }
+  from '../../infrastructure/config/serviceFactory';
+
+// 1. Create services using factory functions
+const profileService = createUserProfileService();
+const managementService = createUserManagementService();
+
+// 2. Inject into controller
+const userController = new UserController(profileService, managementService);
+
+// 3. Define routes
+router.post('/', (req, res) => userController.createUser(req, res));
 ```
 
-The `UserService` injects **both repositories** simultaneously, enabling multi-database operations:
+### Abstract Factory Pattern
+
+The Application layer defines the factory interface:
 
 ```typescript
-@injectable()
-export class UserService {
-  constructor(
-    @inject(TYPES.MySQLUserRepository) private mysqlRepository: IUserRepository,
-    @inject(TYPES.MongoDBUserRepository) private mongoRepository: IUserRepository
-  ) {}
+// src/application/interfaces/IRepositoryFactory.ts
+export interface IRepositoryFactory {
+  createMySQLUserRepository(): IUserRepository;
+  createMongoDBUserRepository(): IUserRepository;
+}
+```
 
-  // Use MongoDB as default (document-based data)
-  private get defaultRepository(): IUserRepository {
-    return this.mongoRepository;
+Infrastructure implements the interface:
+
+```typescript
+// src/infrastructure/config/RepositoryFactory.ts
+export class RepositoryFactory implements IRepositoryFactory {
+  createMySQLUserRepository(): IUserRepository {
+    return getMySQLUserRepository(); // Singleton
   }
 
-  // Use MySQL for relational data (when needed)
-  private get relationalRepository(): IUserRepository {
-    return this.mysqlRepository;
+  createMongoDBUserRepository(): IUserRepository {
+    return getMongoDBUserRepository(); // Singleton
   }
 }
 ```
 
-**This architecture allows you to:**
-- Write to multiple databases simultaneously (dual-write pattern)
-- Read from your preferred database (MongoDB by default)
-- Use different databases for different operations
-- Add more databases without changing business logic
+Services receive the factory via constructor:
 
-## Getting Started
+```typescript
+// src/application/services/UserManagementService.ts
+export class UserManagementService {
+  constructor(private repositoryFactory: IRepositoryFactory) {}
 
-### Prerequisites
+  async createUser(data: CreateUserDTO) {
+    // Service creates use case with repositories from factory
+    const mysqlRepo = this.repositoryFactory.createMySQLUserRepository();
+    const mongoRepo = this.repositoryFactory.createMongoDBUserRepository();
 
-- Node.js (v16 or higher)
-- MySQL and/or MongoDB (supports dual database setup)
-- yarn (recommended) or npm
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/shawon-kanji/hexacore.git
-cd hexacore
+    const useCase = new CreateUserUseCase(mysqlRepo, mongoRepo);
+    return useCase.execute(data);
+  }
+}
 ```
 
-2. Install dependencies:
-```bash
-yarn install
-# or
-npm install
+**Benefits:**
+- Application layer never imports from Infrastructure
+- Easy to test with mock factories
+- True dependency inversion
+- All dependencies point inward
+
+### Bounded Contexts
+
+Services represent bounded contexts:
+
+- **UserProfileService** - Read operations (profile viewing)
+- **UserManagementService** - Write operations (CRUD lifecycle)
+
+Each service groups related use cases by business capability.
+
+### Use Cases
+
+Use cases implement single business operations:
+
+```typescript
+export class CreateUserUseCase {
+  constructor(
+    private mysqlRepository: IUserRepository,
+    private mongoRepository: IUserRepository
+  ) {}
+
+  async execute(data: CreateUserDTO): Promise<UserDTO> {
+    const user = User.create(data);
+
+    // Dual-write pattern
+    await this.mongoRepository.save(user);
+    await this.mysqlRepository.save(user);
+
+    return this.mapToDTO(user);
+  }
+}
 ```
 
-3. Configure environment:
-```bash
-cp .env.example .env
-```
+## Multi-Database Architecture
 
-Edit `.env` and configure **both** database connections (both are required):
+### Dual-Write Pattern
+
+Data is written to **both** MySQL and MongoDB simultaneously:
+
+- **Create** → Writes to both databases
+- **Update** → Updates both databases
+- **Delete** → Removes from both databases
+- **Read** → Reads from MongoDB (document-based queries)
+
+### Configuration
+
+Both databases are required:
 
 ```env
-# Application
-PORT=3000
-NODE_ENV=development
-
-# MySQL Configuration (Required)
+# MySQL
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=root
-MYSQL_PASSWORD=your_password
+MYSQL_PASSWORD=password
 MYSQL_DATABASE=hexacore
 
-# MongoDB Configuration (Required)
+# MongoDB
 MONGODB_URI=mongodb://localhost:27017/hexacore
-```
-
-**Note:** Both MySQL and MongoDB connections are required as the application uses both databases simultaneously.
-
-### Running the Application
-
-Development mode with hot reload:
-```bash
-yarn dev
-# or
-npm run dev
-```
-
-Build for production:
-```bash
-yarn build
-yarn start
-# or
-npm run build
-npm start
-```
-
-### Available Scripts
-
-- `yarn dev` - Start development server with hot reload
-- `yarn build` - Build TypeScript to JavaScript
-- `yarn start` - Run production build
-- `yarn lint` - Run ESLint
-- `yarn format` - Format code with Prettier
-
-## Database Configuration
-
-### Multi-Database Architecture
-
-This application implements a **multi-database architecture** that connects to both MySQL and MongoDB simultaneously. Data operations automatically sync across both databases:
-
-**How it works:**
-- **Create operations**: Data is written to both MySQL and MongoDB
-- **Read operations**: Data is read from MongoDB (the default repository)
-- **Update operations**: Changes are synchronized to both databases
-- **Delete operations**: Data is removed from both databases
-
-**Benefits:**
-- No single point of database failure
-- Use the best database for each use case
-- Seamless data synchronization
-- Easy to add more databases
-
-### Current Implementation
-
-The `UserService` demonstrates the multi-database pattern:
-
-```typescript
-async createUser(createUserDTO: CreateUserDTO): Promise<UserDTO> {
-  const user = User.create(createUserDTO);
-
-  // Save to BOTH databases
-  await this.defaultRepository.save(user);      // MongoDB
-  await this.relationalRepository.save(user);   // MySQL
-
-  return this.mapToDTO(user);
-}
-```
-
-### Customizing Database Usage
-
-You can easily customize which database to use for specific operations by modifying the service methods:
-
-```typescript
-// Read from MySQL instead of MongoDB
-const user = await this.relationalRepository.findById(userId);
-
-// Write to only one database
-await this.mongoRepository.save(user);
-
-// Or implement your own logic
-if (needsRelationalIntegrity) {
-  await this.mysqlRepository.save(user);
-} else {
-  await this.mongoRepository.save(user);
-}
 ```
 
 ## API Endpoints
 
-### User CRUD Operations
+### User Operations
 
-#### Create User
-```
+```bash
+# Create user
 POST /api/users
-Content-Type: application/json
-
 {
   "name": "John Doe",
   "email": "john@example.com",
   "age": 30
 }
-```
-
-#### Get All Users
-```
-GET /api/users
-```
-
-#### Get User by ID
-```
-GET /api/users/:id
-```
-
-#### Update User
-```
-PUT /api/users/:id
-Content-Type: application/json
-
-{
-  "name": "Jane Doe",
-  "email": "jane@example.com",
-  "age": 28
-}
-```
-
-#### Delete User
-```
-DELETE /api/users/:id
-```
-
-#### Health Check
-```
-GET /health
-```
-
-## Example Usage
-
-```bash
-# Create a user
-curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Alice","email":"alice@example.com","age":25}'
 
 # Get all users
-curl http://localhost:3000/api/users
+GET /api/users
 
 # Get user by ID
-curl http://localhost:3000/api/users/{user-id}
+GET /api/users/:id
 
 # Update user
-curl -X PUT http://localhost:3000/api/users/{user-id} \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Alice Smith","age":26}'
+PUT /api/users/:id
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com"
+}
 
 # Delete user
-curl -X DELETE http://localhost:3000/api/users/{user-id}
+DELETE /api/users/:id
+
+# Health check
+GET /health
 ```
 
 ## Domain Model
 
-### User Entity
+### Entities
 
-The User entity encapsulates business logic and invariants:
+Entities encapsulate business logic:
 
 ```typescript
-const user = User.create({
-  name: "John Doe",
-  email: "john@example.com",
-  age: 30
-});
+export class User {
+  private constructor(
+    private readonly id: UserId,
+    private name: string,
+    private email: Email,
+    private readonly age?: number
+  ) {}
 
-// Business methods
-user.updateName("Jane Doe");
-user.updateEmail("jane@example.com");
-user.updateAge(31);
+  static create(props: CreateUserProps): User {
+    // Validation and business rules
+    return new User(UserId.generate(), props.name, new Email(props.email), props.age);
+  }
+
+  updateEmail(newEmail: string): void {
+    this.email = new Email(newEmail); // Validates
+  }
+}
 ```
 
 ### Value Objects
 
-- **UserId**: Unique identifier for users
-- **Email**: Email validation and formatting
+Value objects ensure domain invariants:
 
-Value objects ensure domain invariants are always maintained.
+```typescript
+export class Email {
+  constructor(private readonly value: string) {
+    if (!this.isValid(value)) {
+      throw new Error('Invalid email format');
+    }
+  }
 
-## Extending the Boilerplate
+  private isValid(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+}
+```
 
-### Adding a New Entity
+## Adding New Features
+
+### Add a New Use Case
+
+1. Create use case in `src/application/use-cases/`
+2. Add method to appropriate service
+3. Service creates and executes the use case
+
+### Add a New Service (Bounded Context)
+
+1. Create service in `src/application/services/`
+2. Service constructor accepts `IRepositoryFactory`
+3. Add factory function in `src/infrastructure/config/serviceFactory.ts`
+4. Inject service into controller
+
+### Add a New Entity
 
 1. Create entity in `src/domain/entities/`
 2. Create repository interface in `src/domain/repositories/`
-3. Implement repository adapters in `src/infrastructure/persistence/`
-4. Create service in `src/application/services/`
-5. Create controller in `src/presentation/controllers/`
-6. Add routes in `src/presentation/routes/`
-7. Register in DI container
+3. Implement repositories in `src/infrastructure/persistence/`
+4. Update `IRepositoryFactory` and `RepositoryFactory`
+5. Create use cases and services
+6. Create controller and routes
 
-### Adding a New Database Adapter
+## Testing
 
-Example: Adding PostgreSQL support
+### Unit Test Use Cases
 
-1. Create new folder `src/infrastructure/persistence/postgres/`
-2. Implement `PostgreSQLUserRepository` that implements `IUserRepository`
-3. Add `PostgreSQLConnection` in `src/infrastructure/database/`
-4. Register in DI container:
-   ```typescript
-   container
-     .bind<IUserRepository>(TYPES.PostgreSQLUserRepository)
-     .to(PostgreSQLUserRepository)
-     .inSingletonScope();
-   ```
-5. Inject in service:
-   ```typescript
-   constructor(
-     @inject(TYPES.PostgreSQLUserRepository) private postgresRepository: IUserRepository
-   ) {}
-   ```
+```typescript
+const mockMySQLRepo = createMock<IUserRepository>();
+const mockMongoRepo = createMock<IUserRepository>();
 
-No changes needed to the domain layer or existing repositories!
+const useCase = new CreateUserUseCase(mockMySQLRepo, mockMongoRepo);
+await useCase.execute(userData);
 
-## Benefits of This Architecture
+expect(mockMySQLRepo.save).toHaveBeenCalled();
+expect(mockMongoRepo.save).toHaveBeenCalled();
+```
 
-1. **Testability**: Easy to mock repositories and test business logic
-2. **Maintainability**: Clear separation of concerns
-3. **Flexibility**: Use multiple databases simultaneously or switch between them without changing business logic
-4. **Scalability**: Add new databases or features without affecting existing code
-5. **Domain Focus**: Business logic is independent of technical details
-6. **Resilience**: Multi-database setup provides redundancy and fault tolerance
-7. **Polyglot Persistence**: Use the right database for the right use case
+### Unit Test Services
 
-## Architecture Principles
+```typescript
+const mockFactory: IRepositoryFactory = {
+  createMySQLUserRepository: () => mockMySQLRepo,
+  createMongoDBUserRepository: () => mockMongoRepo,
+};
 
-### Dependency Rule
+const service = new UserManagementService(mockFactory);
+await service.createUser(userData);
+```
 
-Dependencies only point inward:
-- Presentation → Application → Domain
-- Infrastructure → Domain (implements interfaces)
+### Unit Test Domain
 
-The domain layer has **zero** external dependencies.
+```typescript
+test('Email validates format', () => {
+  expect(() => new Email('invalid')).toThrow('Invalid email format');
+  expect(() => new Email('valid@example.com')).not.toThrow();
+});
+```
 
-### SOLID Principles
+## Technologies
 
-- **S**ingle Responsibility: Each class has one reason to change
-- **O**pen/Closed: Open for extension, closed for modification
-- **L**iskov Substitution: Repository implementations are interchangeable
-- **I**nterface Segregation: Small, focused interfaces
-- **D**ependency Inversion: Depend on abstractions, not concretions
+- **TypeScript 5.3** - Type safety with strict mode
+- **Node.js 16+** - JavaScript runtime
+- **Express 4.18** - Web framework
+- **MySQL2 3.6** - MySQL database driver
+- **Mongoose 8.0** - MongoDB ODM
+- **class-validator** - DTO validation
+- **class-transformer** - Object transformation
 
-## Technologies Used
+## Scripts
 
-### Core
-- **TypeScript 5.3.3**: Type safety and better developer experience
-- **Node.js**: JavaScript runtime
-- **Express 4.18**: Fast, unopinionated web framework
+```bash
+yarn dev        # Development with hot reload
+yarn build      # Build TypeScript to JavaScript
+yarn start      # Production: build + run
+yarn lint       # Run ESLint
+yarn format     # Format with Prettier
+```
 
-### Database
-- **MySQL2 3.6**: MySQL driver for Node.js
-- **Mongoose 8.0**: MongoDB ODM with schema validation
+## Architecture Benefits
 
-### Architecture & Patterns
-- **InversifyJS 6.0**: Dependency injection container for IoC
-- **Reflect-metadata 0.2**: Decorator metadata for dependency injection
+✅ **Testability** - Easy to mock dependencies
+✅ **Maintainability** - Clear separation of concerns
+✅ **Flexibility** - Swap implementations without changing business logic
+✅ **Independence** - Business logic independent of frameworks and databases
+✅ **Scalability** - Add features without affecting existing code
+✅ **Type Safety** - Full TypeScript support
 
-### Validation & Transformation
-- **class-validator 0.14**: Declarative validation using decorators
-- **class-transformer 0.5**: Transform plain objects to class instances
+## Design Principles
 
-### Development Tools
-- **ts-node-dev**: TypeScript execution with hot reload
-- **ESLint**: Code linting and style enforcement
-- **Prettier**: Code formatting
-- **dotenv**: Environment variable management
+- **Dependency Inversion** - High-level modules define interfaces
+- **Single Responsibility** - Each class has one reason to change
+- **Open/Closed** - Open for extension, closed for modification
+- **Interface Segregation** - Small, focused interfaces
+- **Clean Architecture** - Dependencies point inward only
 
-## What You'll Learn
+## Documentation
 
-By exploring this boilerplate, you'll understand:
-
-- How to implement **Hexagonal Architecture** in a real-world application
-- **Domain-Driven Design** principles and patterns
-- **Repository Pattern** for database abstraction
-- **Multi-Database Architecture** and polyglot persistence
-- **Dependency Injection** with InversifyJS
-- How to structure a TypeScript project for scalability
-- Writing maintainable, testable, and flexible code
-- SOLID principles in practice
-- Dual-write pattern for data synchronization
-
-## Use Cases
-
-This boilerplate is perfect for:
-
-- Building enterprise-grade APIs
-- Projects requiring multiple database support
-- Learning clean architecture patterns
-- Starting a new TypeScript project with best practices
-- Creating maintainable and testable codebases
+- `ARCHITECTURE.md` - Detailed architecture documentation
+- `CLAUDE.md` - Guide for Claude Code AI assistant
 
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! This is a boilerplate project meant to be forked and customized for your needs.
 
 ## Author
 
@@ -518,4 +416,4 @@ Created by [Shawon Kanji](https://github.com/shawon-kanji)
 
 ---
 
-Built with Hexagonal Architecture principles for maximum flexibility and maintainability.
+Built with Clean Architecture and Domain-Driven Design principles for maximum flexibility and maintainability.

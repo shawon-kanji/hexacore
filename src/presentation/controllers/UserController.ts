@@ -1,11 +1,27 @@
 import { Request, Response } from 'express';
-import { injectable, inject } from 'inversify';
-import { UserService } from '../../application/services/UserService';
-import { TYPES } from '../../shared/types/Types';
+import { UserProfileService } from '../../application/services/UserProfileService';
+import { UserManagementService } from '../../application/services/UserManagementService';
 
-@injectable()
+/**
+ * User Controller
+ *
+ * Receives services via constructor injection (Dependency Injection).
+ * Services are created in the composition root (Infrastructure layer).
+ *
+ * Architecture:
+ * Controller → Services (bounded contexts) → Use Cases → Repositories
+ *
+ * Benefits:
+ * - Follows Dependency Inversion Principle
+ * - Controller depends on service abstractions (could be interfaces)
+ * - Easy to test (inject mock services)
+ * - True Clean Architecture compliance
+ */
 export class UserController {
-  constructor(@inject(TYPES.UserService) private userService: UserService) {}
+  constructor(
+    private profileService: UserProfileService,
+    private managementService: UserManagementService
+  ) {}
 
   async createUser(req: Request, res: Response): Promise<void> {
     try {
@@ -19,7 +35,11 @@ export class UserController {
         return;
       }
 
-      const user = await this.userService.createUser({ name, email, age });
+      const user = await this.managementService.createUser({
+        name,
+        email,
+        age,
+      });
 
       res.status(201).json({
         success: true,
@@ -36,8 +56,7 @@ export class UserController {
   async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-
-      const user = await this.userService.getUserById(id);
+      const user = await this.profileService.getUserProfile(id);
 
       res.status(200).json({
         success: true,
@@ -53,7 +72,7 @@ export class UserController {
 
   async getAllUsers(_req: Request, res: Response): Promise<void> {
     try {
-      const users = await this.userService.getAllUsers();
+      const users = await this.profileService.getAllUserProfiles();
 
       res.status(200).json({
         success: true,
@@ -72,7 +91,7 @@ export class UserController {
       const { id } = req.params;
       const updateData = req.body;
 
-      const user = await this.userService.updateUser(id, updateData);
+      const user = await this.managementService.updateUser(id, updateData);
 
       res.status(200).json({
         success: true,
@@ -90,7 +109,7 @@ export class UserController {
     try {
       const { id } = req.params;
 
-      await this.userService.deleteUser(id);
+      await this.managementService.deleteUser(id);
 
       res.status(200).json({
         success: true,

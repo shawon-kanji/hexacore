@@ -1,11 +1,9 @@
-import { injectable } from 'inversify';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserId } from '../../../domain/value-objects/UserId';
 import { Email } from '../../../domain/value-objects/Email';
 import { UserModel, IUserDocument } from './UserSchema';
 
-@injectable()
 export class MongoDBUserRepository implements IUserRepository {
   async save(user: User): Promise<void> {
     try {

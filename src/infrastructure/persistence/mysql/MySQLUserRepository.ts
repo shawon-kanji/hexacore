@@ -1,4 +1,3 @@
-import { injectable } from 'inversify';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserId } from '../../../domain/value-objects/UserId';
@@ -15,7 +14,6 @@ interface UserRow extends RowDataPacket {
   updated_at: Date;
 }
 
-@injectable()
 export class MySQLUserRepository implements IUserRepository {
   private connection: MySQLConnection;
 
