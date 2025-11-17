@@ -105,10 +105,12 @@ src/
 - **Hexagonal Architecture**: Business logic is completely isolated from external concerns
 - **Domain-Driven Design**: Rich domain model with entities and value objects
 - **Repository Pattern**: Abstract data access through interfaces
+- **Multi-Database Support**: Simultaneous connections to MySQL and MongoDB with automatic synchronization
 - **Dependency Injection**: Using InversifyJS for IoC
-- **Database Agnostic**: Easily switch between MySQL and MongoDB
-- **Type Safety**: Full TypeScript support
+- **Polyglot Persistence**: Use multiple databases in a single application
+- **Type Safety**: Full TypeScript support with strict mode
 - **Clean Code**: SOLID principles and separation of concerns
+- **Dual-Write Pattern**: Automatic data synchronization across databases
 
 ## How It Works
 
@@ -121,32 +123,50 @@ The repository pattern provides an abstraction layer between the domain and data
    - `MySQLUserRepository` in `src/infrastructure/persistence/mysql/`
    - `MongoDBUserRepository` in `src/infrastructure/persistence/mongodb/`
 
-### Dependency Injection
+### Dependency Injection & Multi-Database Support
 
-The IoC container (`src/infrastructure/config/container.ts`) binds the appropriate repository based on the `DATABASE_TYPE` environment variable:
+The IoC container (`src/infrastructure/config/container.ts`) registers **both** repository implementations:
 
 ```typescript
-if (DATABASE_TYPE === 'mongodb') {
-  container.bind<IUserRepository>(TYPES.IUserRepository)
-    .to(MongoDBUserRepository);
-} else {
-  container.bind<IUserRepository>(TYPES.IUserRepository)
-    .to(MySQLUserRepository);
-}
+// Bind BOTH repository implementations
+container
+  .bind<IUserRepository>(TYPES.MySQLUserRepository)
+  .to(MySQLUserRepository)
+  .inSingletonScope();
+
+container
+  .bind<IUserRepository>(TYPES.MongoDBUserRepository)
+  .to(MongoDBUserRepository)
+  .inSingletonScope();
 ```
 
-The `UserService` depends on `IUserRepository` interface, not on a concrete implementation:
+The `UserService` injects **both repositories** simultaneously, enabling multi-database operations:
 
 ```typescript
 @injectable()
 export class UserService {
   constructor(
-    @inject(TYPES.IUserRepository) private userRepository: IUserRepository
+    @inject(TYPES.MySQLUserRepository) private mysqlRepository: IUserRepository,
+    @inject(TYPES.MongoDBUserRepository) private mongoRepository: IUserRepository
   ) {}
+
+  // Use MongoDB as default (document-based data)
+  private get defaultRepository(): IUserRepository {
+    return this.mongoRepository;
+  }
+
+  // Use MySQL for relational data (when needed)
+  private get relationalRepository(): IUserRepository {
+    return this.mysqlRepository;
+  }
 }
 ```
 
-**This means you can switch databases without changing a single line of code in the service layer!**
+**This architecture allows you to:**
+- Write to multiple databases simultaneously (dual-write pattern)
+- Read from your preferred database (MongoDB by default)
+- Use different databases for different operations
+- Add more databases without changing business logic
 
 ## Getting Started
 
@@ -176,22 +196,25 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and set your database configuration:
+Edit `.env` and configure **both** database connections (both are required):
 
 ```env
-# Choose 'mysql' or 'mongodb'
-DATABASE_TYPE=mysql
+# Application
+PORT=3000
+NODE_ENV=development
 
-# MySQL Configuration (if using MySQL)
+# MySQL Configuration (Required)
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=root
 MYSQL_PASSWORD=your_password
 MYSQL_DATABASE=hexacore
 
-# MongoDB Configuration (if using MongoDB)
+# MongoDB Configuration (Required)
 MONGODB_URI=mongodb://localhost:27017/hexacore
 ```
+
+**Note:** Both MySQL and MongoDB connections are required as the application uses both databases simultaneously.
 
 ### Running the Application
 
@@ -221,30 +244,56 @@ npm start
 
 ## Database Configuration
 
-### Dual Database Setup
+### Multi-Database Architecture
 
-This application supports **dual database setup**, connecting to both MySQL and MongoDB simultaneously. The current implementation registers both repository implementations, allowing you to:
+This application implements a **multi-database architecture** that connects to both MySQL and MongoDB simultaneously. Data operations automatically sync across both databases:
 
-- Store data in both databases
-- Use the repository pattern to abstract data access
-- Easily switch between implementations via dependency injection
+**How it works:**
+- **Create operations**: Data is written to both MySQL and MongoDB
+- **Read operations**: Data is read from MongoDB (the default repository)
+- **Update operations**: Changes are synchronized to both databases
+- **Delete operations**: Data is removed from both databases
 
-### Switching Between Databases
+**Benefits:**
+- No single point of database failure
+- Use the best database for each use case
+- Seamless data synchronization
+- Easy to add more databases
 
-To switch the primary repository from MySQL to MongoDB (or vice versa):
+### Current Implementation
 
-1. Update `.env`:
-```env
-DATABASE_TYPE=mongodb  # or mysql
+The `UserService` demonstrates the multi-database pattern:
+
+```typescript
+async createUser(createUserDTO: CreateUserDTO): Promise<UserDTO> {
+  const user = User.create(createUserDTO);
+
+  // Save to BOTH databases
+  await this.defaultRepository.save(user);      // MongoDB
+  await this.relationalRepository.save(user);   // MySQL
+
+  return this.mapToDTO(user);
+}
 ```
 
-2. Configure the desired database connection settings in `.env`
+### Customizing Database Usage
 
-3. Update the DI container in `src/infrastructure/config/container.ts` to bind your preferred implementation
+You can easily customize which database to use for specific operations by modifying the service methods:
 
-4. Restart the application
+```typescript
+// Read from MySQL instead of MongoDB
+const user = await this.relationalRepository.findById(userId);
 
-**That's it!** No code changes required in the service layer. The application will automatically use the appropriate repository implementation.
+// Write to only one database
+await this.mongoRepository.save(user);
+
+// Or implement your own logic
+if (needsRelationalIntegrity) {
+  await this.mysqlRepository.save(user);
+} else {
+  await this.mongoRepository.save(user);
+}
+```
 
 ## API Endpoints
 
@@ -357,18 +406,36 @@ Value objects ensure domain invariants are always maintained.
 
 ### Adding a New Database Adapter
 
-1. Create new folder in `src/infrastructure/persistence/`
-2. Implement the repository interface
-3. Add database connection in `src/infrastructure/database/`
-4. Update DI container to include new adapter option
+Example: Adding PostgreSQL support
+
+1. Create new folder `src/infrastructure/persistence/postgres/`
+2. Implement `PostgreSQLUserRepository` that implements `IUserRepository`
+3. Add `PostgreSQLConnection` in `src/infrastructure/database/`
+4. Register in DI container:
+   ```typescript
+   container
+     .bind<IUserRepository>(TYPES.PostgreSQLUserRepository)
+     .to(PostgreSQLUserRepository)
+     .inSingletonScope();
+   ```
+5. Inject in service:
+   ```typescript
+   constructor(
+     @inject(TYPES.PostgreSQLUserRepository) private postgresRepository: IUserRepository
+   ) {}
+   ```
+
+No changes needed to the domain layer or existing repositories!
 
 ## Benefits of This Architecture
 
 1. **Testability**: Easy to mock repositories and test business logic
 2. **Maintainability**: Clear separation of concerns
-3. **Flexibility**: Switch databases or external services without changing business logic
-4. **Scalability**: Add new features without affecting existing code
+3. **Flexibility**: Use multiple databases simultaneously or switch between them without changing business logic
+4. **Scalability**: Add new databases or features without affecting existing code
 5. **Domain Focus**: Business logic is independent of technical details
+6. **Resilience**: Multi-database setup provides redundancy and fault tolerance
+7. **Polyglot Persistence**: Use the right database for the right use case
 
 ## Architecture Principles
 
@@ -420,10 +487,12 @@ By exploring this boilerplate, you'll understand:
 - How to implement **Hexagonal Architecture** in a real-world application
 - **Domain-Driven Design** principles and patterns
 - **Repository Pattern** for database abstraction
+- **Multi-Database Architecture** and polyglot persistence
 - **Dependency Injection** with InversifyJS
 - How to structure a TypeScript project for scalability
 - Writing maintainable, testable, and flexible code
 - SOLID principles in practice
+- Dual-write pattern for data synchronization
 
 ## Use Cases
 
