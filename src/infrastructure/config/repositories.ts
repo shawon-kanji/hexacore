@@ -3,20 +3,26 @@
  *
  * Database connections should be reused across the application.
  * This factory ensures we only create one instance of each repository.
+ *
+ * Updated to use Prisma ORM for MySQL instead of manual SQL queries.
  */
 
-import { MySQLUserRepository } from '../persistence/mysql/MySQLUserRepository';
+import { PrismaUserRepository } from '../persistence/mysql/PrismaUserRepository';
 import { MongoDBUserRepository } from '../persistence/mongodb/MongoDBUserRepository';
 
 // Singleton instances
-let mysqlUserRepository: MySQLUserRepository | null = null;
+let prismaUserRepository: PrismaUserRepository | null = null;
 let mongoUserRepository: MongoDBUserRepository | null = null;
 
-export function getMySQLUserRepository(): MySQLUserRepository {
-  if (!mysqlUserRepository) {
-    mysqlUserRepository = new MySQLUserRepository();
+/**
+ * Get MySQL User Repository (Prisma)
+ * Uses Prisma ORM for type-safe database access
+ */
+export function getMySQLUserRepository(): PrismaUserRepository {
+  if (!prismaUserRepository) {
+    prismaUserRepository = new PrismaUserRepository();
   }
-  return mysqlUserRepository;
+  return prismaUserRepository;
 }
 
 export function getMongoDBUserRepository(): MongoDBUserRepository {

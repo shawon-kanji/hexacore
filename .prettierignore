@@ -1,0 +1,8 @@
+dist
+node_modules
+*.md
+prisma/migrations
+.env
+package.json
+tsconfig.json
+.eslintrc.json

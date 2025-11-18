@@ -1,6 +1,7 @@
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { UserId } from '../../domain/value-objects/UserId';
-import { UserDTO } from '../dto/UserDTO';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { UserId } from '../../../domain/value-objects/UserId';
+import { UserDTO } from '../../dto/UserDTO';
+import { NotFoundError } from '../../../shared/errors';
 
 /**
  * Use Case: Get a user by ID
@@ -15,7 +16,7 @@ export class GetUserByIdUseCase {
     const user = await this.mongoRepository.findById(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found', { userId: id });
     }
 
     return {

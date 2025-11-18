@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { UserId } from '../../domain/value-objects/UserId';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { UserId } from '../../../domain/value-objects/UserId';
 
 /**
  * Use Case: Delete a user

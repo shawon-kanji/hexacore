@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import { createLogger } from '../../shared/utils/logger';
+
+const logger = createLogger({ module: 'MongoDB' });
 
 export class MongoDBConnection {
   private static instance: MongoDBConnection;
@@ -14,29 +17,33 @@ export class MongoDBConnection {
 
   public async connect(): Promise<void> {
     try {
-      const uri =
-        process.env.MONGODB_URI || 'mongodb://localhost:27017/hexacore';
+      const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/hexacore';
 
       await mongoose.connect(uri);
 
-      console.log('MongoDB connected successfully');
+      logger.info(
+        {
+          uri: uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@'), // Hide password in logs
+        },
+        'MongoDB connected successfully'
+      );
 
       mongoose.connection.on('error', (error) => {
-        console.error('MongoDB connection error:', error);
+        logger.error({ error }, 'MongoDB connection error');
       });
 
       mongoose.connection.on('disconnected', () => {
-        console.log('MongoDB disconnected');
+        logger.warn('MongoDB disconnected');
       });
     } catch (error) {
-      console.error('MongoDB connection error:', error);
+      logger.error({ error }, 'MongoDB connection error');
       throw error;
     }
   }
 
   public async disconnect(): Promise<void> {
     await mongoose.disconnect();
-    console.log('MongoDB disconnected');
+    logger.info('MongoDB disconnected');
   }
 
   public getConnection(): typeof mongoose {

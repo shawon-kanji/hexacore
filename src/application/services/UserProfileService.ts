@@ -1,6 +1,6 @@
 import { IRepositoryFactory } from '../interfaces/IRepositoryFactory';
-import { GetUserByIdUseCase } from '../use-cases/GetUserByIdUseCase';
-import { GetAllUsersUseCase } from '../use-cases/GetAllUsersUseCase';
+import { GetUserByIdUseCase } from '../use-cases/users/GetUserByIdUseCase';
+import { GetAllUsersUseCase } from '../use-cases/users/GetAllUsersUseCase';
 
 /**
  * User Profile Service

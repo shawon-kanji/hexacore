@@ -1,8 +1,8 @@
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { User } from '../../domain/entities/User';
-import { Email } from '../../domain/value-objects/Email';
-import { CreateUserDTO } from '../dto/CreateUserDTO';
-import { UserDTO } from '../dto/UserDTO';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { User } from '../../../domain/entities/User';
+import { Email } from '../../../domain/value-objects/Email';
+import { CreateUserDTO } from '../../dto/CreateUserDTO';
+import { UserDTO } from '../../dto/UserDTO';
 
 /**
  * Use Case: Create a new user
@@ -18,9 +18,7 @@ export class CreateUserUseCase {
 
   async execute(createUserDTO: CreateUserDTO): Promise<UserDTO> {
     // Check if user with email already exists
-    const existingUser = await this.mongoRepository.findByEmail(
-      Email.create(createUserDTO.email)
-    );
+    const existingUser = await this.mongoRepository.findByEmail(Email.create(createUserDTO.email));
 
     if (existingUser) {
       throw new Error('User with this email already exists');

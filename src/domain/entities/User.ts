@@ -27,11 +27,7 @@ export class User {
     this.updatedAt = props.updatedAt;
   }
 
-  public static create(props: {
-    name: string;
-    email: string;
-    age?: number;
-  }): User {
+  public static create(props: { name: string; email: string; age?: number }): User {
     const now = new Date();
 
     if (!props.name || props.name.trim().length === 0) {

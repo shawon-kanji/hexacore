@@ -1,5 +1,5 @@
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { UserDTO } from '../dto/UserDTO';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { UserDTO } from '../../dto/UserDTO';
 
 /**
  * Use Case: Get all users

@@ -1,8 +1,8 @@
-import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { UserId } from '../../domain/value-objects/UserId';
-import { Email } from '../../domain/value-objects/Email';
-import { UpdateUserDTO } from '../dto/UpdateUserDTO';
-import { UserDTO } from '../dto/UserDTO';
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { UserId } from '../../../domain/value-objects/UserId';
+import { Email } from '../../../domain/value-objects/Email';
+import { UpdateUserDTO } from '../../dto/UpdateUserDTO';
+import { UserDTO } from '../../dto/UserDTO';
 
 /**
  * Use Case: Update user information

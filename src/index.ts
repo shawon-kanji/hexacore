@@ -4,9 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
-import { MySQLConnection } from './infrastructure/database/MySQLConnection';
+import { getPrismaClient, disconnectPrisma } from './infrastructure/database/PrismaClient';
 import { MongoDBConnection } from './infrastructure/database/MongoDBConnection';
 import userRoutes from './presentation/routes/userRoutes';
+import { logger } from './shared/utils/logger';
+import { errorHandler, notFoundHandler } from './presentation/middlewares/errorHandler';
 
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
@@ -27,46 +29,60 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+// 404 handler for undefined routes
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
+
 // Initialize database and start server
 async function startServer() {
   try {
-    // Connect to BOTH databases
-    const mysqlConnection = MySQLConnection.getInstance();
-    await mysqlConnection.connect();
-    await mysqlConnection.initializeSchema();
-    console.log('✓ Connected to MySQL and initialized schema');
+    // Initialize Prisma client (MySQL with ORM)
+    const prisma = getPrismaClient();
+    await prisma.$connect();
+    logger.info('Prisma connected to MySQL successfully');
 
+    // Connect to MongoDB
     const mongoConnection = MongoDBConnection.getInstance();
     await mongoConnection.connect();
-    console.log('✓ Connected to MongoDB');
 
     // Start Express server
     app.listen(PORT, () => {
-      console.log('='.repeat(50));
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`Using BOTH MySQL and MongoDB databases`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('='.repeat(50));
+      logger.info('='.repeat(50));
+      logger.info(
+        {
+          port: PORT,
+          databases: ['MySQL (Prisma)', 'MongoDB'],
+          environment: process.env.NODE_ENV || 'development',
+        },
+        'Server started successfully'
+      );
+      logger.info('='.repeat(50));
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.fatal({ error }, 'Failed to start server');
     process.exit(1);
   }
 }
 
 // Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  await MySQLConnection.getInstance().disconnect();
-  await MongoDBConnection.getInstance().disconnect();
-  process.exit(0);
+process.on('SIGTERM', () => {
+  void (async () => {
+    logger.info('SIGTERM signal received: closing HTTP server');
+    await disconnectPrisma();
+    await MongoDBConnection.getInstance().disconnect();
+    process.exit(0);
+  })();
 });
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  await MySQLConnection.getInstance().disconnect();
-  await MongoDBConnection.getInstance().disconnect();
-  process.exit(0);
+process.on('SIGINT', () => {
+  void (async () => {
+    logger.info('SIGINT signal received: closing HTTP server');
+    await disconnectPrisma();
+    await MongoDBConnection.getInstance().disconnect();
+    process.exit(0);
+  })();
 });
 
-startServer();
+void startServer();

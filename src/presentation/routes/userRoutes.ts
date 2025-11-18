@@ -4,6 +4,14 @@ import {
   createUserProfileService,
   createUserManagementService,
 } from '../../infrastructure/config/serviceFactory';
+import { validate } from '../middlewares/validation';
+import {
+  createUserSchema,
+  updateUserSchema,
+  getUserByIdSchema,
+  deleteUserSchema,
+  getAllUsersSchema,
+} from '../validation/userSchemas';
 
 const router = Router();
 
@@ -35,11 +43,11 @@ const profileService = createUserProfileService();
 const managementService = createUserManagementService();
 const userController = new UserController(profileService, managementService);
 
-// Define routes
-router.post('/', (req, res) => userController.createUser(req, res));
-router.get('/', (req, res) => userController.getAllUsers(req, res));
-router.get('/:id', (req, res) => userController.getUserById(req, res));
-router.put('/:id', (req, res) => userController.updateUser(req, res));
-router.delete('/:id', (req, res) => userController.deleteUser(req, res));
+// Define routes with validation middleware
+router.post('/', validate(createUserSchema), userController.createUser);
+router.get('/', validate(getAllUsersSchema), userController.getAllUsers);
+router.get('/:id', validate(getUserByIdSchema), userController.getUserById);
+router.put('/:id', validate(updateUserSchema), userController.updateUser);
+router.delete('/:id', validate(deleteUserSchema), userController.deleteUser);
 
 export default router;

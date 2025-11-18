@@ -1,7 +1,7 @@
 import { IRepositoryFactory } from '../interfaces/IRepositoryFactory';
-import { CreateUserUseCase } from '../use-cases/CreateUserUseCase';
-import { UpdateUserUseCase } from '../use-cases/UpdateUserUseCase';
-import { DeleteUserUseCase } from '../use-cases/DeleteUserUseCase';
+import { CreateUserUseCase } from '../use-cases/users/CreateUserUseCase';
+import { UpdateUserUseCase } from '../use-cases/users/UpdateUserUseCase';
+import { DeleteUserUseCase } from '../use-cases/users/DeleteUserUseCase';
 import { CreateUserDTO } from '../dto/CreateUserDTO';
 import { UpdateUserDTO } from '../dto/UpdateUserDTO';
 

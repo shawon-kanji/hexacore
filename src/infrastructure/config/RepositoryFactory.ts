@@ -1,9 +1,6 @@
 import { IRepositoryFactory } from '../../application/interfaces/IRepositoryFactory';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import {
-  getMySQLUserRepository,
-  getMongoDBUserRepository,
-} from './repositories';
+import { getMySQLUserRepository, getMongoDBUserRepository } from './repositories';
 
 /**
  * Repository Factory Implementation
