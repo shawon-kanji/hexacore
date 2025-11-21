@@ -39,7 +39,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('save', () => {
     it('should save a user to the database', async () => {
-      const user = UserFactory.createValidUser({
+      const user = await UserFactory.createValidUser({
         name: 'Integration Test User',
         email: 'integration@example.com',
         age: 30,
@@ -55,10 +55,10 @@ describe('PrismaUserRepository Integration Tests', () => {
     });
 
     it('should throw ConflictError when saving duplicate email', async () => {
-      const user1 = UserFactory.createValidUser({
+      const user1 = await UserFactory.createValidUser({
         email: 'duplicate@example.com',
       });
-      const user2 = UserFactory.createValidUser({
+      const user2 = await UserFactory.createValidUser({
         email: 'duplicate@example.com',
       });
 
@@ -70,7 +70,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('findById', () => {
     it('should find a user by id', async () => {
-      const user = UserFactory.createValidUser();
+      const user = await UserFactory.createValidUser();
       await repository.save(user);
 
       const foundUser = await repository.findById(user.getId());
@@ -90,7 +90,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('findByEmail', () => {
     it('should find a user by email', async () => {
-      const user = UserFactory.createValidUser({
+      const user = await UserFactory.createValidUser({
         email: 'findme@example.com',
       });
       await repository.save(user);
@@ -116,7 +116,7 @@ describe('PrismaUserRepository Integration Tests', () => {
     });
 
     it('should return all users ordered by createdAt desc', async () => {
-      const users = UserFactory.createMultipleUsers(3);
+      const users = await UserFactory.createMultipleUsers(3);
 
       for (const user of users) {
         await repository.save(user);
@@ -136,7 +136,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('update', () => {
     it('should update a user', async () => {
-      const user = UserFactory.createValidUser({
+      const user = await UserFactory.createValidUser({
         name: 'Original Name',
         email: 'original@example.com',
       });
@@ -150,16 +150,16 @@ describe('PrismaUserRepository Integration Tests', () => {
     });
 
     it('should throw NotFoundError when updating non-existent user', async () => {
-      const user = UserFactory.createValidUser();
+      const user = await UserFactory.createValidUser();
 
       await expect(repository.update(user)).rejects.toThrow(NotFoundError);
     });
 
     it('should throw ConflictError when updating to duplicate email', async () => {
-      const user1 = UserFactory.createValidUser({
+      const user1 = await UserFactory.createValidUser({
         email: 'user1@example.com',
       });
-      const user2 = UserFactory.createValidUser({
+      const user2 = await UserFactory.createValidUser({
         email: 'user2@example.com',
       });
 
@@ -174,7 +174,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('delete', () => {
     it('should delete a user', async () => {
-      const user = UserFactory.createValidUser();
+      const user = await UserFactory.createValidUser();
       await repository.save(user);
 
       await repository.delete(user.getId());
@@ -192,7 +192,7 @@ describe('PrismaUserRepository Integration Tests', () => {
 
   describe('exists', () => {
     it('should return true when user exists', async () => {
-      const user = UserFactory.createValidUser();
+      const user = await UserFactory.createValidUser();
       await repository.save(user);
 
       const exists = await repository.exists(user.getId());

@@ -1,3 +1,4 @@
+import type { User as PrismaUser } from '@prisma/client';
 import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserId } from '../../../domain/value-objects/UserId';
@@ -73,7 +74,7 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async findAll(): Promise<User[]> {
-    const userRecords = await this.prisma.user.findMany({
+    const userRecords: PrismaUser[] = await this.prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
     });
 
