@@ -27,3 +27,6 @@ coverage/
 
 /src/generated/prisma
 .claude/
+
+# VS Code settings
+.vscode/
