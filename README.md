@@ -14,6 +14,7 @@ A professional TypeScript Node.js boilerplate implementing **Clean Architecture*
 - **Dual-Database Support** - Simultaneous MySQL and MongoDB with sync
 - **Bounded Contexts** - Services organized by business capabilities
 - **Repository Pattern** - Database-agnostic data access
+- **Authentication & RBAC** - JWT access/refresh tokens, password reset flow, and role guards
 - **Type Safety** - Full TypeScript with strict mode
 - **Zero Framework Dependencies** - Clean, explicit dependency injection
 

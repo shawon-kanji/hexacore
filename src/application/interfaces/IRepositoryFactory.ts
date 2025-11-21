@@ -1,4 +1,6 @@
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
+import { IRefreshTokenRepository } from '../../domain/repositories/IRefreshTokenRepository';
+import { IPasswordResetTokenRepository } from '../../domain/repositories/IPasswordResetTokenRepository';
 
 /**
  * Repository Factory Interface
@@ -24,4 +26,24 @@ export interface IRepositoryFactory {
    * Create MongoDB user repository instance
    */
   createMongoDBUserRepository(): IUserRepository;
+
+  /**
+   * Create MySQL refresh token repository instance
+   */
+  createMySQLRefreshTokenRepository(): IRefreshTokenRepository;
+
+  /**
+   * Create MongoDB refresh token repository instance
+   */
+  createMongoDBRefreshTokenRepository(): IRefreshTokenRepository;
+
+  /**
+   * Create MySQL password reset token repository instance
+   */
+  createMySQLPasswordResetTokenRepository(): IPasswordResetTokenRepository;
+
+  /**
+   * Create MongoDB password reset token repository instance
+   */
+  createMongoDBPasswordResetTokenRepository(): IPasswordResetTokenRepository;
 }

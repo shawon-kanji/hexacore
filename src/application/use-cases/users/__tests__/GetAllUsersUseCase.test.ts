@@ -24,7 +24,7 @@ describe('GetAllUsersUseCase', () => {
     });
 
     it('should return all users', async () => {
-      const users = UserFactory.createMultipleUsers(3);
+      const users = await UserFactory.createMultipleUsers(3);
       mockRepository.seed(users);
 
       const result = await getAllUsersUseCase.execute();

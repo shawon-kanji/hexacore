@@ -189,9 +189,7 @@ describe('User API Endpoints (E2E)', () => {
     });
 
     it('should return 404 for non-existent user', async () => {
-      const response = await request(app)
-        .get('/api/users/non-existent-id')
-        .expect(404);
+      const response = await request(app).get('/api/users/non-existent-id').expect(404);
 
       expect(response.body.success).toBe(false);
       expect(response.body.message).toContain('not found');
@@ -307,9 +305,7 @@ describe('User API Endpoints (E2E)', () => {
     });
 
     it('should return 404 when deleting non-existent user', async () => {
-      const response = await request(app)
-        .delete('/api/users/non-existent-id')
-        .expect(404);
+      const response = await request(app).delete('/api/users/non-existent-id').expect(404);
 
       expect(response.body.success).toBe(false);
     });

@@ -28,13 +28,13 @@ This document tracks all planned features for the HexaCore boilerplate.
 ## 🚀 High Priority (To Implement)
 
 ### 2. Authentication & Authorization 🔐
-- [ ] JWT authentication (access + refresh tokens)
-- [ ] Password hashing with bcrypt
-- [ ] User registration & login
-- [ ] Role-based Access Control (RBAC)
-- [ ] Auth middleware
-- [ ] Permission guards
-- [ ] Password reset flow
+- [x] JWT authentication (access + refresh tokens)
+- [x] Password hashing with bcrypt
+- [x] User registration & login
+- [x] Role-based Access Control (RBAC)
+- [x] Auth middleware
+- [x] Permission guards
+- [x] Password reset flow
 
 ### 3. API Documentation 📚
 - [ ] Swagger/OpenAPI setup

@@ -8,5 +8,6 @@ export { ValidationError } from './ValidationError';
 export { NotFoundError } from './NotFoundError';
 export { ConflictError } from './ConflictError';
 export { DatabaseError } from './DatabaseError';
+export { UnauthorizedError } from './UnauthorizedError';
 export { ErrorCodes } from './errorCodes';
 export type { ErrorCode } from './errorCodes';

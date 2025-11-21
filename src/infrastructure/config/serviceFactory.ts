@@ -1,6 +1,7 @@
 import { RepositoryFactory } from './RepositoryFactory';
 import { UserProfileService } from '../../application/services/UserProfileService';
 import { UserManagementService } from '../../application/services/UserManagementService';
+import { AuthService } from '../../application/services/AuthService';
 
 /**
  * Service Factory (Composition Root)
@@ -31,4 +32,12 @@ export function createUserProfileService(): UserProfileService {
 export function createUserManagementService(): UserManagementService {
   const repositoryFactory = new RepositoryFactory();
   return new UserManagementService(repositoryFactory);
+}
+
+/**
+ * Create AuthService with all dependencies
+ */
+export function createAuthService(): AuthService {
+  const repositoryFactory = new RepositoryFactory();
+  return new AuthService(repositoryFactory);
 }

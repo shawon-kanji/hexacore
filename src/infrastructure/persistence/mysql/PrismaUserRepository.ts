@@ -2,6 +2,8 @@ import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserId } from '../../../domain/value-objects/UserId';
 import { Email } from '../../../domain/value-objects/Email';
+import { Password } from '../../../domain/value-objects/Password';
+import { Role } from '../../../domain/value-objects/Role';
 import { getPrismaClient } from '../../database/PrismaClient';
 import { ConflictError, NotFoundError } from '../../../shared/errors';
 
@@ -28,6 +30,8 @@ export class PrismaUserRepository implements IUserRepository {
           id: user.getId().getValue(),
           name: user.getName(),
           email: user.getEmail().getValue(),
+          password: user.getPassword().getValue(),
+          role: user.getRole().getValue(),
           age: user.getAge() ?? null,
           createdAt: user.getCreatedAt(),
           updatedAt: user.getUpdatedAt(),
@@ -83,6 +87,8 @@ export class PrismaUserRepository implements IUserRepository {
         data: {
           name: user.getName(),
           email: user.getEmail().getValue(),
+          password: user.getPassword().getValue(),
+          role: user.getRole().getValue(),
           age: user.getAge() ?? null,
           updatedAt: user.getUpdatedAt(),
         },
@@ -128,6 +134,8 @@ export class PrismaUserRepository implements IUserRepository {
     id: string;
     name: string;
     email: string;
+    password: string;
+    role: string;
     age: number | null;
     createdAt: Date;
     updatedAt: Date;
@@ -136,6 +144,8 @@ export class PrismaUserRepository implements IUserRepository {
       id: UserId.fromString(record.id),
       name: record.name,
       email: Email.create(record.email),
+      password: Password.fromHash(record.password),
+      role: Role.create(record.role),
       age: record.age ?? undefined,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

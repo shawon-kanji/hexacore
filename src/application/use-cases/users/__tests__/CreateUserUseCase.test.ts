@@ -56,7 +56,7 @@ describe('CreateUserUseCase', () => {
     });
 
     it('should throw error if user with email already exists', async () => {
-      const existingUser = UserFactory.createValidUser({
+      const existingUser = await UserFactory.createValidUser({
         email: 'existing@example.com',
       });
       await mockMongoRepository.save(existingUser);

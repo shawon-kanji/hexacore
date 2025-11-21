@@ -108,7 +108,7 @@ describe('DeleteUserUseCase', () => {
     });
 
     it('should handle multiple deletes', async () => {
-      const users = UserFactory.createMultipleUsers(5);
+      const users = await UserFactory.createMultipleUsers(5);
 
       // Save all users to both repositories
       for (const user of users) {

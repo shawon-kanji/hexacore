@@ -7,6 +7,7 @@ import express, { Application, Request, Response } from 'express';
 import { getPrismaClient, disconnectPrisma } from './infrastructure/database/PrismaClient';
 import { MongoDBConnection } from './infrastructure/database/MongoDBConnection';
 import userRoutes from './presentation/routes/userRoutes';
+import authRoutes from './presentation/routes/authRoutes';
 import { logger } from './shared/utils/logger';
 import { errorHandler, notFoundHandler } from './presentation/middlewares/errorHandler';
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 // Health check route

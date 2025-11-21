@@ -4,6 +4,8 @@ export interface IUserDocument extends Document {
   _id: string;
   name: string;
   email: string;
+  password: string;
+  role: string;
   age?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -24,6 +26,15 @@ const UserSchema = new Schema<IUserDocument>(
       required: true,
       unique: true,
       lowercase: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    role: {
+      type: String,
+      required: true,
+      default: 'USER',
     },
     age: {
       type: Number,

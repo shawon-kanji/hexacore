@@ -1,6 +1,15 @@
 import { IRepositoryFactory } from '../../application/interfaces/IRepositoryFactory';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
-import { getMySQLUserRepository, getMongoDBUserRepository } from './repositories';
+import { IRefreshTokenRepository } from '../../domain/repositories/IRefreshTokenRepository';
+import { IPasswordResetTokenRepository } from '../../domain/repositories/IPasswordResetTokenRepository';
+import {
+  getMySQLUserRepository,
+  getMongoDBUserRepository,
+  getMySQLRefreshTokenRepository,
+  getMongoDBRefreshTokenRepository,
+  getMySQLPasswordResetTokenRepository,
+  getMongoDBPasswordResetTokenRepository,
+} from './repositories';
 
 /**
  * Repository Factory Implementation
@@ -31,5 +40,29 @@ export class RepositoryFactory implements IRepositoryFactory {
    */
   createMongoDBUserRepository(): IUserRepository {
     return getMongoDBUserRepository();
+  }
+
+  /**
+   * Create MySQL refresh token repository instance
+   * Returns singleton instance from repository factory
+   */
+  createMySQLRefreshTokenRepository(): IRefreshTokenRepository {
+    return getMySQLRefreshTokenRepository();
+  }
+
+  /**
+   * Create MongoDB refresh token repository instance
+   * Returns singleton instance from repository factory
+   */
+  createMongoDBRefreshTokenRepository(): IRefreshTokenRepository {
+    return getMongoDBRefreshTokenRepository();
+  }
+
+  createMySQLPasswordResetTokenRepository(): IPasswordResetTokenRepository {
+    return getMySQLPasswordResetTokenRepository();
+  }
+
+  createMongoDBPasswordResetTokenRepository(): IPasswordResetTokenRepository {
+    return getMongoDBPasswordResetTokenRepository();
   }
 }

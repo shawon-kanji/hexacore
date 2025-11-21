@@ -2,6 +2,8 @@ import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserId } from '../../../domain/value-objects/UserId';
 import { Email } from '../../../domain/value-objects/Email';
+import { Password } from '../../../domain/value-objects/Password';
+import { Role } from '../../../domain/value-objects/Role';
 import { UserModel, IUserDocument } from './UserSchema';
 
 export class MongoDBUserRepository implements IUserRepository {
@@ -11,6 +13,8 @@ export class MongoDBUserRepository implements IUserRepository {
         _id: user.getId().getValue(),
         name: user.getName(),
         email: user.getEmail().getValue(),
+        password: user.getPassword().getValue(),
+        role: user.getRole().getValue(),
         age: user.getAge(),
         createdAt: user.getCreatedAt(),
         updatedAt: user.getUpdatedAt(),
@@ -59,6 +63,8 @@ export class MongoDBUserRepository implements IUserRepository {
       {
         name: user.getName(),
         email: user.getEmail().getValue(),
+        password: user.getPassword().getValue(),
+        role: user.getRole().getValue(),
         age: user.getAge(),
         updatedAt: user.getUpdatedAt(),
       },
@@ -88,6 +94,8 @@ export class MongoDBUserRepository implements IUserRepository {
       id: UserId.fromString(document._id),
       name: document.name,
       email: Email.create(document.email),
+      password: Password.fromHash(document.password),
+      role: Role.create(document.role),
       age: document.age,
       createdAt: new Date(document.createdAt),
       updatedAt: new Date(document.updatedAt),

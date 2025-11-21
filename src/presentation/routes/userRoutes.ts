@@ -12,6 +12,12 @@ import {
   deleteUserSchema,
   getAllUsersSchema,
 } from '../validation/userSchemas';
+import { authMiddleware } from '../middleware/authMiddleware';
+import {
+  requireAdmin,
+  requireOwnershipOrAdmin,
+  requireStaff,
+} from '../middleware/authorizationMiddleware';
 
 const router = Router();
 
@@ -43,11 +49,45 @@ const profileService = createUserProfileService();
 const managementService = createUserManagementService();
 const userController = new UserController(profileService, managementService);
 
-// Define routes with validation middleware
-router.post('/', validate(createUserSchema), userController.createUser);
-router.get('/', validate(getAllUsersSchema), userController.getAllUsers);
-router.get('/:id', validate(getUserByIdSchema), userController.getUserById);
-router.put('/:id', validate(updateUserSchema), userController.updateUser);
-router.delete('/:id', validate(deleteUserSchema), userController.deleteUser);
+// Define routes with validation and RBAC middleware
+router.post(
+  '/',
+  authMiddleware,
+  requireAdmin(),
+  validate(createUserSchema),
+  (req, res, next) => userController.createUser(req, res, next)
+);
+
+router.get(
+  '/',
+  authMiddleware,
+  requireStaff(),
+  validate(getAllUsersSchema),
+  (req, res, next) => userController.getAllUsers(req, res, next)
+);
+
+router.get(
+  '/:id',
+  authMiddleware,
+  validate(getUserByIdSchema),
+  requireOwnershipOrAdmin('id'),
+  (req, res, next) => userController.getUserById(req, res, next)
+);
+
+router.put(
+  '/:id',
+  authMiddleware,
+  validate(updateUserSchema),
+  requireOwnershipOrAdmin('id'),
+  (req, res, next) => userController.updateUser(req, res, next)
+);
+
+router.delete(
+  '/:id',
+  authMiddleware,
+  requireAdmin(),
+  validate(deleteUserSchema),
+  (req, res, next) => userController.deleteUser(req, res, next)
+);
 
 export default router;
